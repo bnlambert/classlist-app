@@ -1,43 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { SelectionModel } from '@angular/cdk/collections';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatButtonModule } from '@angular/material/button';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { Student } from '../../types/Student';
 
-
-export interface PeriodicElement {
-  id: string;
-  firstName: string;
-  lastName: string;
-  gender: string;
-  program: string;
-}
-
-const ELEMENT_DATA: PeriodicElement[] = [
-  {
-    id: '1',
-    firstName: 'John',
-    lastName: 'Jeff',
-    gender: 'm',
-    program: 'Web'
-  },
-  {
-    id: '2',
-    firstName: 'May',
-    lastName: 'Rose',
-    gender: 'm',
-    program: 'Web'
-  },
-  {
-    id: '3',
-    firstName: 'Ayuk',
-    lastName: 'Jones',
-    gender: 'm',
-    program: 'Front End'
-  }
-];
 
 @Component({
   selector: 'app-student-list',
@@ -152,10 +121,24 @@ const ELEMENT_DATA: PeriodicElement[] = [
     }
   `]
 })
-export class StudentListComponent {
+export class StudentListComponent implements OnInit, OnChanges {
+  
+  @Input() students: Student[] = [];
+  @Output() onAction: EventEmitter<any> = new EventEmitter();
+
   displayedColumns: string[] = ['select', 'position', 'firstName', 'lastName','gender', 'program', 'action'];
-  dataSource = new MatTableDataSource<PeriodicElement>(ELEMENT_DATA);
-  selection = new SelectionModel<PeriodicElement>(true, []);
+  dataSource = new MatTableDataSource<Student>([]);
+  selection = new SelectionModel<Student>(true, []);
+
+  ngOnInit() {
+    this.dataSource.data = this.students;
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if(changes['students']) {
+      this.dataSource.data = changes['students'].currentValue;
+    }
+  }
 
   /** Whether the number of selected elements matches the total number of rows. */
   isAllSelected() {
@@ -175,7 +158,7 @@ export class StudentListComponent {
   }
 
   /** The label for the checkbox on the passed row */
-  checkboxLabel(row?: PeriodicElement): string {
+  checkboxLabel(row?: Student): string {
     if (!row) {
       return `${this.isAllSelected() ? 'deselect' : 'select'} all`;
     }
@@ -184,7 +167,7 @@ export class StudentListComponent {
   }
 
   handleClick(action: string, id: string) {
-    console.log({action, id});
+    this.onAction.emit({action, id})
   }
 
   applyFilter(event: Event) {
