@@ -5,6 +5,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { StudentFormComponent } from './student-form.component';
 import { STUDENT_DATA } from '../../utils/data/student';
 import { Student } from '../../types/Student';
+import { ConfirmActionDialog } from '../../utils/components/confirm-action-diaglog.component';
 
 @Component({
   selector: 'app-student',
@@ -65,6 +66,22 @@ export class StudentComponent implements OnInit {
       }
     });
   }
+
+  openDeleteDialog(id: any, enterAnimationDuration: string, exitAnimationDuration: string) {
+    const deleteRef = this.dialog.open(ConfirmActionDialog, {
+      data: id,
+      enterAnimationDuration,
+      exitAnimationDuration
+
+    });
+
+    deleteRef.componentInstance.onDelete.subscribe({
+      next: (val: any) => {
+        const students = this.students;
+        this.students = students.filter((obj: any) => obj.id !== val);
+      }
+    })
+  }
   
   handleAction(event: any) {
     switch(event.action) {
@@ -74,6 +91,9 @@ export class StudentComponent implements OnInit {
       case 'edit':
         this.student = this.students.find((obj) => obj.id === event.id) || null;
         this.openDialog(true);
+        break;
+      case 'delete':
+        this.openDeleteDialog(event.id, '3000ms', '1500ms');
         break;
       default:
         ;
